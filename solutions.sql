@@ -2,3 +2,8 @@
 
 SELECT name
 from passenger
+
+-- Задание 2. Вывести названия всеx авиакомпаний.
+
+SELECT name
+from company
