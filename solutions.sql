@@ -319,6 +319,19 @@ SELECT start_pair
 FROM Timepair
 WHERE id = 4;
 
+-- Задание 42. Сколько времени обучающийся будет находиться в школе, учась со 2-го по 4-ый уч. предмет ?
+
+SELECT TIMEDIFF(
+		(	SELECT end_pair
+			FROM Timepair
+			WHERE id = 4),
+		(   SELECT start_pair
+			FROM Timepair
+			WHERE id = 2)) 
+AS time
+FROM Timepair
+GROUP BY time;
+
 -- Задание 43. Выведите фамилии преподавателей, которые ведут физическую культуру (Physical Culture). Отcортируйте преподавателей по фамилии.
 
 SELECT last_name
