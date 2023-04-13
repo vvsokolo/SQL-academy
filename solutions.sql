@@ -132,6 +132,223 @@ JOIN Payments ON FamilyMembers.member_id = Payments.family_member
 JOIN Goods ON Payments.good = Goods.good_id
 WHERE good_name = 'potato';
 
+-- Задание 20. Сколько и кто из семьи потратил на развлечения (entertainment). Вывести статус в семье, имя, сумму.
+
+SELECT status,
+	member_name,
+	SUM(unit_price * amount) AS costs
+FROM FamilyMembers
+	JOIN Payments ON FamilyMembers.member_id = Payments.family_member
+	JOIN Goods ON Payments.good = Goods.good_id
+	JOIN GoodTypes ON Goods.type = GoodTypes.good_type_id
+WHERE good_type_name = ('entertainment')
+GROUP BY status,
+	member_name;
+
+-- Задание 21. Определить товары, которые покупали более 1 раза.
+
+SELECT good_name
+FROM Goods
+	JOIN Payments ON Goods.good_id = Payments.good
+GROUP BY good_name
+HAVING COUNT(good) > 1;
+
+-- Задание 22. Найти имена всех матерей (mother).
+
+SELECT DISTINCT member_name
+FROM FamilyMembers
+WHERE status IN ('mother');
+
+-- Задание 23. Найдите самый дорогой деликатес (delicacies) и выведите его стоимость.
+
+SELECT good_name,
+	unit_price
+FROM Goods
+	JOIN Payments ON Goods.good_id = Payments.good
+WHERE type = 3
+LIMIT 1;
+
+-- Или
+
+SELECT good_name,
+	unit_price
+FROM Goods
+	JOIN Payments ON Goods.good_id = Payments.good
+WHERE unit_price = ALL (
+		SELECT MAX(unit_price)
+		FROM Payments
+			JOIN Goods ON Goods.good_id = Payments.good
+		WHERE type = 3);
+
+-- Задание 24. Определить кто и сколько потратил в июне 2005.
+
+SELECT DISTINCT member_name,
+	(amount * unit_price) AS costs
+FROM FamilyMembers
+	JOIN Payments ON member_id = family_member
+WHERE MONTH(date) = '06';
+
+--  Задание 25. Определить, какие товары не покупались в 2005 году.
+
+SELECT DISTINCT good_name
+FROM Goods
+WHERE good_id NOT IN (
+		SELECT good
+		FROM Payments
+		WHERE YEAR(date) = 2005
+	);
+
+-- Задание 26. Определить группы товаров, которые не приобретались в 2005 году.
+
+SELECT DISTINCT good_type_name
+FROM GoodTypes
+	JOIN Goods ON good_type_id = type
+WHERE good_type_id NOT IN (
+		SELECT type
+		FROM Goods
+			JOIN Payments ON good_id = good
+		WHERE YEAR(date) = 2005
+	);
+
+-- Задание 27. Узнать, сколько потрачено на каждую из групп товаров в 2005 году. Вывести название группы и сумму.
+
+SELECT good_type_name,
+	SUM(amount * unit_price) AS costs
+FROM GoodTypes
+	JOIN Goods ON good_type_id = type
+	JOIN Payments ON good_id = good
+WHERE YEAR(date) = '2005'
+GROUP BY good_type_name;
+
+-- Задание 28. Сколько рейсов совершили авиакомпании из Ростова (Rostov) в Москву (Moscow) ?
+
+SELECT COUNT(*) AS count
+FROM Trip
+WHERE town_from = 'Rostov'
+	AND town_to = 'Moscow';
+
+-- Задание 29. Выведите имена пассажиров улетевших в Москву (Moscow) на самолете TU-134.
+
+SELECT DISTINCT name
+FROM Passenger
+	JOIN Pass_in_trip ON Passenger.id = Pass_in_trip.passenger
+	JOIN Trip ON Pass_in_trip.trip = Trip.id
+WHERE town_to = 'Moscow'
+	AND plane = 'TU-134';
+
+-- Задание 30. Выведите нагруженность (число пассажиров) каждого рейса (trip). Результат вывести в отсортированном виде по убыванию нагруженности.
+
+SELECT trip,
+	COUNT(*) AS count
+FROM Pass_in_trip
+	JOIN Passenger ON Pass_in_trip.passenger = Passenger.id
+GROUP BY trip
+ORDER BY 2 DESC;
+
+-- Задание 31. Вывести всех членов семьи с фамилией Quincey.
+
+SELECT *
+FROM FamilyMembers
+WHERE member_name LIKE '% Quincey';
+
+-- Задание 32. Вывести средний возраст людей (в годах), хранящихся в базе данных. Результат округлите до целого в меньшую сторону.
+
+SELECT FLOOR(AVG(FLOOR(DATEDIFF(NOW(), birthday) / 365))) AS age
+FROM FamilyMembers;
+
+-- Или
+
+SELECT FLOOR(AVG((YEAR(CURRENT_DATE) - YEAR(birthday)) -1)) AS age
+FROM FamilyMembers;
+
+-- Задание 33. Найдите среднюю стоимость икры. В базе данных хранятся данные о покупках красной (red caviar) и черной икры (black caviar).
+
+SELECT AVG(unit_price) AS cost
+FROM Payments
+WHERE good IN (
+		SELECT good_id
+		FROM Goods
+		WHERE good_name LIKE '%caviar');
+
+-- Задание 34. Сколько всего 10-ых классов.
+
+SELECT COUNT(*) AS count
+FROM class
+WHERE name LIKE '10%';
+
+-- Задание 35. Сколько различных кабинетов школы использовались 2.09.2019 в образовательных целях ?
+
+SELECT COUNT(classroom) AS count
+FROM Schedule
+WHERE date = '2019-09-02';
+
+-- Задание 36. Выведите информацию об обучающихся живущих на улице Пушкина (ul. Pushkina)?
+
+SELECT *
+FROM Student
+WHERE address LIKE 'ul. Pushkina%';
+
+-- Задание 37. Сколько лет самому молодому обучающемуся ?
+
+SELECT MIN((YEAR(CURRENT_DATE) - YEAR(birthday) -1)) AS year
+FROM Student;
+
+-- Задание 38. Сколько Анн (Anna) учится в школе ?
+
+SELECT COUNT(first_name) AS count
+FROM student
+WHERE first_name LIKE 'Anna';
+
+-- Задание 39. Сколько обучающихся в 10 B классе ?
+
+SELECT COUNT(student) AS count
+FROM Student_in_class
+WHERE class = 6;
+
+-- Задание 40. Выведите название предметов, которые преподает Ромашкин П.П. (Romashkin P.P.) ?
+
+SELECT name AS subjects
+FROM Subject
+	JOIN Schedule ON Subject.id = Schedule.subject
+	JOIN Teacher ON Schedule.teacher = Teacher.id
+WHERE last_name LIKE 'Romashkin';
+
+-- Задание 41. Во сколько начинается 4-ый учебный предмет по расписанию ?
+
+SELECT start_pair
+FROM Timepair
+WHERE id = 4;
+
+-- Задание 43. Выведите фамилии преподавателей, которые ведут физическую культуру (Physical Culture). Отcортируйте преподавателей по фамилии.
+
+SELECT last_name
+FROM Teacher
+	JOIN Schedule ON Teacher.id = Schedule.teacher
+	JOIN subject ON Schedule.subject = Subject.id
+WHERE Subject.name LIKE 'Physical Culture'
+ORDER BY last_name;
+
+-- Задание 44. Найдите максимальный возраст (колич. лет) среди обучающихся 10 классов ?
+
+SELECT MAX(YEAR(CURRENT_DATE) - YEAR(birthday) -1) AS max_year
+FROM Student;
+
+-- Или
+
+SELECT MAX(YEAR(CURRENT_DATE) - YEAR(birthday)) AS max_year
+FROM Student
+	JOIN Student_in_class ON Student.id = Student_in_class.student
+	JOIN Class ON Student_in_class.class = Class.id
+WHERE Class.name LIKE '10%';
+
+-- Или
+
+SELECT MAX(YEAR(CURRENT_DATE) - YEAR(birthday)) AS max_year
+FROM Student
+	JOIN Student_in_class ON Student.id = Student_in_class.student
+	JOIN Class ON Student_in_class.class = Class.id
+WHERE Class.id BETWEEN 6 AND 7;
+
 -- Задание 45. Какой(ие) кабинет(ы) пользуются самым большим спросом?
 
 SELECT classroom
@@ -143,6 +360,31 @@ FROM Schedule
 GROUP BY classroom
 ORDER BY 1 DESC
 LIMIT 1);
+
+-- Задание 46. В каких классах введет занятия преподаватель "Krauze" ?
+
+SELECT DISTINCT name
+FROM Class AS cl
+	JOIN Schedule AS sch ON cl.id = sch.class
+	JOIN teacher AS t ON sch.teacher = t.id
+WHERE last_name LIKE 'Krauze';
+
+-- Задание 47. Сколько занятий провел Krauze 30 августа 2019 г.?
+
+SELECT COUNT(class) AS count
+FROM Schedule
+	JOIN Teacher ON Schedule.teacher = Teacher.id
+WHERE last_name LIKE 'Krauze'
+	AND Schedule.date LIKE '2019-08-30%';
+
+-- Задание 48. Выведите заполненность классов в порядке убывания.
+
+SELECT name,
+	COUNT(Student_in_class.student) AS count
+FROM Class
+	JOIN Student_in_class ON Class.id = Student_in_class.class
+GROUP BY Class.id
+ORDER BY 2 DESC;
 
 -- Задание 49. Какой процент обучающихся учится в 10 A классе ?
 
@@ -160,3 +402,9 @@ AS percent
 FROM Student
 JOIN Student_in_class ON Student.id=Student_in_class.student 
 WHERE birthday LIKE '2000%' или WHERE YEAR(birthday) = 2000;
+
+-- Задание 53. Измените имя "Andie Quincey" на новое "Andie Anthony".
+
+UPDATE FamilyMembers
+SET member_name = 'Andie Anthony'
+WHERE member_id = 3;
