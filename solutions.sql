@@ -421,3 +421,29 @@ WHERE birthday LIKE '2000%' или WHERE YEAR(birthday) = 2000;
 UPDATE FamilyMembers
 SET member_name = 'Andie Anthony'
 WHERE member_id = 3;
+
+--  Задание 65. Необходимо вывести рейтинг для комнат, которые хоть раз арендовали, как среднее значение рейтинга отзывов округленное до целого вниз.
+
+SELECT room_id,
+	FLOOR(AVG(rating)) AS rating
+FROM Reservations AS r
+	JOIN Reviews AS re ON r.id = re.reservation_id
+GROUP BY room_id
+ORDER BY 1;
+
+-- Задание 72. Выведите среднюю стоимость бронирования для комнат, которых бронировали хотя бы один раз. Среднюю стоимость необходимо округлить до целого значения вверх.
+
+SELECT room_id,
+	CEILING(AVG(price)) AS avg_price
+FROM Reservations
+GROUP BY room_id
+HAVING COUNT(room_id) >= 1;
+
+-- Задание 73. Выведите id тех комнат, которые арендовали нечетное количество раз.
+
+SELECT room_id,
+	COUNT(room_id) AS count
+FROM Reservations
+GROUP BY room_id
+HAVING MOD (COUNT(room_id), 2) = 1
+ORDER BY room_id;
