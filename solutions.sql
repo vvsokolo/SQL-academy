@@ -431,6 +431,21 @@ FROM Reservations AS r
 GROUP BY room_id
 ORDER BY 1;
 
+-- Задание 66. Вывести список комнат со всеми удобствами (наличие ТВ, интернета, кухни и кондиционера), а также общее количество дней и сумму за все дни аренды каждой из таких комнат.
+
+SELECT home_type,
+	address,
+	IFNULL(SUM(TIMESTAMPDIFF(day, start_date, end_date)), 0) AS days,
+	IFNULL(SUM(total), 0) AS total_fee
+FROM Rooms AS ro
+	LEFT JOIN Reservations AS re 
+	ON ro.id = re.room_id
+WHERE has_tv = 1
+	AND has_internet = 1
+	AND has_kitchen = 1
+	AND has_air_con = 1
+GROUP BY ro.id;
+
 -- Задание 72. Выведите среднюю стоимость бронирования для комнат, которых бронировали хотя бы один раз. Среднюю стоимость необходимо округлить до целого значения вверх.
 
 SELECT room_id,
