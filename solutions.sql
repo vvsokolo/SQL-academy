@@ -422,6 +422,19 @@ UPDATE FamilyMembers
 SET member_name = 'Andie Anthony'
 WHERE member_id = 3;
 
+-- Задание 59. Вывести пользователей,указавших Белорусский номер телефона ? Телефонный код Белоруссии +375.
+
+SELECT *
+FROM Users
+WHERE phone_number LIKE '+375%';
+
+--  Задание 63. Выведите отсортированный список (по возрастанию) фамилий и имен студентов в виде Фамилия.И.
+
+SELECT CONCAT(last_name, ".", LEFT(first_name, 1), ".") AS name
+FROM Student
+ORDER BY last_name,
+	first_name;
+
 --  Задание 65. Необходимо вывести рейтинг для комнат, которые хоть раз арендовали, как среднее значение рейтинга отзывов округленное до целого вниз.
 
 SELECT room_id,
@@ -445,6 +458,24 @@ WHERE has_tv = 1
 	AND has_kitchen = 1
 	AND has_air_con = 1
 GROUP BY ro.id;
+
+-- Задание 70. Необходимо категоризовать жилье на economy, comfort, premium по цене соответственно <= 100, 100 < цена < 200, >= 200. В качестве результата вывести таблицу с названием категории и количеством жилья, попадающего в данную категорию.
+
+SELECT 'economy' AS category,
+	COUNT(id) AS count
+FROM Rooms
+WHERE price <= 100
+UNION
+SELECT 'comfort' AS category,
+	COUNT(id) AS count
+FROM Rooms
+WHERE price > 100
+	AND price < 200
+UNION
+SELECT 'premium' AS category,
+	COUNT(id) AS count
+FROM Rooms
+WHERE price >= 200;
 
 -- Задание 72. Выведите среднюю стоимость бронирования для комнат, которых бронировали хотя бы один раз. Среднюю стоимость необходимо округлить до целого значения вверх.
 
